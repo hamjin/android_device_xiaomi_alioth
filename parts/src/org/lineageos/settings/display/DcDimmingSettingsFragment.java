@@ -26,30 +26,27 @@ import androidx.preference.SwitchPreference;
 import org.lineageos.settings.R;
 import org.lineageos.settings.utils.FileUtils;
 
+import vendor.xiaomi.hardware.displayfeature.V1_0.IDisplayFeature;
+
 public class DcDimmingSettingsFragment extends PreferenceFragment implements
         OnPreferenceChangeListener {
 
     private SwitchPreference mDcDimmingPreference;
     private static final String DC_DIMMING_ENABLE_KEY = "dc_dimming_enable";
-    private static final String DC_DIMMING_NODE = "/sys/class/drm/card0-DSI-1/disp_param";
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         addPreferencesFromResource(R.xml.dcdimming_settings);
         mDcDimmingPreference = (SwitchPreference) findPreference(DC_DIMMING_ENABLE_KEY);
-        if (FileUtils.fileExists(DC_DIMMING_NODE)) {
-            mDcDimmingPreference.setEnabled(true);
-            mDcDimmingPreference.setOnPreferenceChangeListener(this);
-        } else {
-            mDcDimmingPreference.setSummary(R.string.dc_dimming_enable_summary_not_supported);
-            mDcDimmingPreference.setEnabled(false);
-        }
+        mDcDimmingPreference.setEnabled(true);
+        mDcDimmingPreference.setOnPreferenceChangeListener(this);
     }
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         if (DC_DIMMING_ENABLE_KEY.equals(preference.getKey())) {
-            FileUtils.writeLine(DC_DIMMING_NODE, (Boolean) newValue ? "0x40000":"0x50000");
+            IDisplayFeature mDisplayFeature = IDisplayFeature.getService();
+            mDisplayFeature.setFeature(0, 20, (Boolean) newValue ? 1 : 0, 255);
         }
         return true;
     }

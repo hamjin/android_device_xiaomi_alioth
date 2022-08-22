@@ -29,12 +29,13 @@ import org.lineageos.settings.dirac.DiracUtils;
 import org.lineageos.settings.doze.DozeUtils;
 import org.lineageos.settings.utils.FileUtils;
 
+import vendor.xiaomi.hardware.displayfeature.V1_0.IDisplayFeature;
+
 public class BootCompletedReceiver extends BroadcastReceiver {
 
     private static final boolean DEBUG = false;
     private static final String TAG = "XiaomiParts";
     private static final String DC_DIMMING_ENABLE_KEY = "dc_dimming_enable";
-    private static final String DC_DIMMING_NODE = "/sys/class/drm/card0-DSI-1/disp_param";
 
     @Override
     public void onReceive(final Context context, Intent intent) {
@@ -45,6 +46,7 @@ public class BootCompletedReceiver extends BroadcastReceiver {
         DozeUtils.checkDozeService(context);
 
         boolean dcDimmingEnabled = sharedPrefs.getBoolean(DC_DIMMING_ENABLE_KEY, false);
-        FileUtils.writeLine(DC_DIMMING_NODE, dcDimmingEnabled ? "0x40000" : "0x50000");
+        IDisplayFeature mDisplayFeature = IDisplayFeature.getService();
+        mDisplayFeature.setFeature(0, 20, dcDimmingEnabled ? 1 : 0, 255);
     }
 }
